@@ -371,13 +371,13 @@ btnTestWebhook.addEventListener('click', async () => {
 });
 
 /**
- * Update Manager PIN
+ * Update Manager Password / PIN
  */
 btnUpdatePin.addEventListener('click', async () => {
   const newPin = newPinInput.value.trim();
   if (newPin.length < 4) {
     pinStatusMsg.style.color = 'var(--danger)';
-    pinStatusMsg.textContent = '⚠️ PIN must be at least 4 digits.';
+    pinStatusMsg.textContent = '⚠️ Password must be at least 4 characters.';
     return;
   }
 
@@ -393,10 +393,10 @@ btnUpdatePin.addEventListener('click', async () => {
 
     if (res.ok) {
       pinStatusMsg.style.color = 'var(--primary)';
-      pinStatusMsg.textContent = '✓ Manager PIN updated successfully!';
+      pinStatusMsg.textContent = '✓ Manager password updated successfully!';
       newPinInput.value = '';
     } else {
-      throw new Error('Failed to update PIN');
+      throw new Error('Failed to update password');
     }
   } catch (err) {
     pinStatusMsg.style.color = 'var(--danger)';
