@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Till Closing Calculator</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon">💵</div>
+        <div>
+          <div class="brand-title">Till Closing</div>
+          <div class="brand-subtitle">Cash Drawer Calculator</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="btnResetTop" class="btn-header" type="button" title="Clear all counts">
+          <span>🔄</span> Reset
+        </button>
+        <a href="/admin" class="btn-header" title="Manager Admin">
+          <span>🔒</span> Admin
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Calculator Content -->
+  <main class="container">
+    <form id="tillForm" autocomplete="off" onsubmit="return false;">
+      
+      <!-- Employee Info -->
+      <div class="card" style="padding: 16px;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="employeeName">
+            Employee Name / Initials <span class="req">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="employeeName" 
+            class="form-control" 
+            placeholder="e.g., Alex M." 
+            required 
+            maxlength="50"
+            autocapitalize="words"
+          >
+        </div>
+      </div>
+
+      <!-- Denominations Table Card -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">💵 Cash Denominations</span>
+          <span class="card-badge" id="nonZeroCount">0 items counted</span>
+        </div>
+
+        <div class="calc-table">
+          <div class="table-head">
+            <div>Denom</div>
+            <div>Quantity</div>
+            <div>Total ($)</div>
+          </div>
+
+          <!-- Denomination Rows Rendered Dynamically -->
+          <div id="denomRowsContainer"></div>
+        </div>
+      </div>
+
+      <!-- Calculations & Closing Totals -->
+      <div class="summary-card">
+        <!-- 1. Total Cash Counted -->
+        <div class="summary-row">
+          <div class="summary-label">
+            <span>Total Cash Counted</span>
+            <span class="summary-sublabel">Total bills & coins in till</span>
+          </div>
+          <div class="summary-value primary" id="totalCashDisplay">$0.00</div>
+        </div>
+
+        <!-- 2. Drawer Float (Cash to stay) -->
+        <div class="summary-row">
+          <div class="summary-label">
+            <span>Cash Stays in Drawer</span>
+            <span class="summary-sublabel">Drawer float (default $200)</span>
+          </div>
+          <div class="summary-input-wrap">
+            <span class="prefix">$</span>
+            <input 
+              type="number" 
+              id="drawerFloatInput" 
+              class="summary-input" 
+              value="200" 
+              min="0" 
+              step="1"
+              inputmode="decimal"
+            >
+          </div>
+        </div>
+
+        <!-- 3. Total to Deposit Highlight Box -->
+        <div class="deposit-box">
+          <div class="deposit-header">
+            <div class="deposit-title">💰 Cash to Deposit</div>
+            <div class="deposit-amount" id="depositAmountDisplay">$0.00</div>
+          </div>
+          <div class="deposit-explainer">
+            ⚠️ <strong>Action:</strong> This is what should be cashed out from the register and prepared for the bank deposit.
+          </div>
+        </div>
+
+        <!-- 4. Register Expected Amount -->
+        <div class="summary-row">
+          <div class="summary-label">
+            <span>Register Expected</span>
+            <span class="summary-sublabel">Expected drawer cash after deposit</span>
+          </div>
+          <div class="summary-input-wrap">
+            <span class="prefix">$</span>
+            <input 
+              type="number" 
+              id="expectedAmountInput" 
+              class="summary-input" 
+              placeholder="0.00" 
+              min="0" 
+              step="0.01"
+              inputmode="decimal"
+            >
+          </div>
+        </div>
+
+        <!-- 5. Over / Short Discrepancy -->
+        <div class="summary-row" id="discrepancyRow">
+          <div class="summary-label">
+            <span>Discrepancy</span>
+            <span class="summary-sublabel">Cash kept in drawer vs register expected</span>
+          </div>
+          <div id="discrepancyBadge" class="discrepancy-badge balanced">
+            <span>Balanced $0.00</span>
+          </div>
+        </div>
+
+        <!-- Optional Notes -->
+        <div class="form-group" style="margin-top: 14px; margin-bottom: 0;">
+          <label class="form-label" for="shiftNotes" style="font-size: 0.8rem; font-weight: 600;">
+            Notes (Optional)
+          </label>
+          <input 
+            type="text" 
+            id="shiftNotes" 
+            class="form-control" 
+            placeholder="Any comments, coin rolls, or shift notes..."
+            maxlength="200"
+          >
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <button type="button" id="btnSave" class="btn-save">
+        <span>💾</span> Save & Submit Till Closing
+      </button>
+      <div id="saveStatusMsg" class="save-status-msg" style="display: none;"></div>
+
+      <button type="button" id="btnResetBottom" class="btn-secondary">
+        Clear & Reset Form
+      </button>
+
+    </form>
+  </main>
+
+  <!-- Success Confirmation Modal -->
+  <div id="successModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-icon-wrap">✓</div>
+      <h2 class="modal-title">Till Closing Saved!</h2>
+      <p class="modal-desc">The drawer closing has been recorded into the database.</p>
+
+      <div class="receipt-box" id="modalReceiptDetails">
+        <!-- Injected via JS -->
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" id="btnModalDone" class="btn-save" style="height: 48px;">
+          Start New Till Closing
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

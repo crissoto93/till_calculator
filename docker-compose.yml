@@ -1,0 +1,19 @@
+services:
+  till-calculator:
+    build: .
+    container_name: till-calculator
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - ADMIN_PIN=1234
+      - DB_PATH=/app/data/till.db
+      # Optional: set WEBHOOK_URL here or configure in Admin UI
+      # - WEBHOOK_URL=https://script.google.com/macros/s/.../exec
+    volumes:
+      - till_data:/app/data
+
+volumes:
+  till_data:
+    name: till_data

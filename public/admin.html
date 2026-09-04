@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manager Admin - Till Closings</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Admin Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon" style="background: #475569;">📊</div>
+        <div>
+          <div class="brand-title">Manager Dashboard</div>
+          <div class="brand-subtitle">Till Closings, Exports & Audits</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a href="/" class="btn-header" title="Back to Calculator">
+          <span>💵</span> Calculator
+        </a>
+        <button id="btnLogout" class="btn-header" style="display: none;" type="button">
+          Logout
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="max-width: 900px;">
+    
+    <!-- PIN Entry View (shown when logged out) -->
+    <div id="pinView" class="card" style="max-width: 400px; margin: 40px auto; padding: 24px; text-align: center;">
+      <div class="brand-icon" style="width: 50px; height: 50px; margin: 0 auto 16px auto; background: #334155; font-size: 24px;">🔒</div>
+      <h2 style="font-size: 1.3rem; margin-bottom: 6px;">Manager PIN Required</h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">
+        Employees cannot access previous closings. Enter manager PIN to view records and export.
+      </p>
+
+      <form id="pinForm" onsubmit="return false;">
+        <div class="form-group">
+          <input 
+            type="password" 
+            id="adminPinInput" 
+            class="form-control" 
+            placeholder="Enter PIN (Default: 1234)" 
+            inputmode="numeric" 
+            pattern="[0-9]*" 
+            maxlength="10"
+            style="text-align: center; font-size: 1.5rem; letter-spacing: 0.2em; height: 50px;"
+            autofocus
+            required
+          >
+        </div>
+        <button type="submit" id="btnLogin" class="btn-save" style="height: 46px; font-size: 1rem;">
+          Unlock Dashboard
+        </button>
+        <div id="pinErrorMsg" class="save-status-msg" style="display: none;"></div>
+      </form>
+    </div>
+
+    <!-- Admin Dashboard (shown when logged in) -->
+    <div id="dashboardView" style="display: none;">
+
+      <!-- Top Metric Cards -->
+      <div class="admin-stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Closings</div>
+          <div class="stat-val" id="statClosings">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Deposits</div>
+          <div class="stat-val" style="color: var(--primary);" id="statDeposits">$0.00</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Cash Counted</div>
+          <div class="stat-val" id="statTotalCash">$0.00</div>
+        </div>
+      </div>
+
+      <!-- Action Toolbar -->
+      <div class="card" style="padding: 14px 16px; margin-bottom: 16px;">
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between;">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button id="btnExportCsv" class="btn-header" style="background: var(--primary); color: white; border: none; padding: 8px 14px;">
+              <span>📥</span> Export to CSV (Excel/Sheets)
+            </button>
+            <button id="btnOpenSettings" class="btn-header" style="padding: 8px 14px;">
+              <span>⚙️</span> Webhook & Google Sheets
+            </button>
+          </div>
+          <div>
+            <input 
+              type="text" 
+              id="filterInput" 
+              class="form-control" 
+              placeholder="Search by employee..." 
+              style="height: 38px; font-size: 0.88rem; width: 200px;"
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings Panel (Collapsible) -->
+      <div id="settingsPanel" class="card" style="display: none; padding: 18px; border-left: 4px solid var(--accent);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h3 style="font-size: 1.1rem; font-weight: 700;">⚙️ Integration & Security Settings</h3>
+          <button type="button" id="btnCloseSettings" class="btn-header" style="padding: 4px 8px;">✕ Close</button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="webhookUrlInput">Google Sheets / Notion Webhook URL</label>
+          <div style="display: flex; gap: 8px;">
+            <input 
+              type="url" 
+              id="webhookUrlInput" 
+              class="form-control" 
+              placeholder="https://script.google.com/macros/s/.../exec" 
+              style="height: 40px; font-size: 0.9rem;"
+            >
+            <button id="btnSaveWebhook" class="btn-header" style="background: #334155; color: white; border: none;">
+              Save
+            </button>
+            <button id="btnTestWebhook" class="btn-header" style="border-color: #334155;">
+              Test
+            </button>
+          </div>
+          <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px;">
+            When provided, every drawer closing automatically posts JSON data to this URL. See docs/GOOGLE_SHEETS_GUIDE.md for a 2-minute Google Apps Script setup.
+          </div>
+          <div id="webhookStatusMsg" style="font-size: 0.82rem; margin-top: 6px; font-weight: 600;"></div>
+        </div>
+
+        <div class="form-group" style="margin-top: 14px; margin-bottom: 0;">
+          <label class="form-label" for="newPinInput">Change Manager PIN</label>
+          <div style="display: flex; gap: 8px; max-width: 320px;">
+            <input 
+              type="password" 
+              id="newPinInput" 
+              class="form-control" 
+              placeholder="New 4+ digit PIN" 
+              style="height: 40px;"
+            >
+            <button id="btnUpdatePin" class="btn-header" style="background: #334155; color: white; border: none;">
+              Update PIN
+            </button>
+          </div>
+          <div id="pinStatusMsg" style="font-size: 0.82rem; margin-top: 6px; font-weight: 600;"></div>
+        </div>
+      </div>
+
+      <!-- History Table Card -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📋 Drawer Closings History</span>
+          <span class="card-badge" id="historyCount">0 entries</span>
+        </div>
+
+        <div class="data-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Date & Time</th>
+                <th>Employee</th>
+                <th>Total Cash</th>
+                <th>Float</th>
+                <th>Deposit</th>
+                <th>Expected</th>
+                <th>Discrepancy</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="closingsTableBody">
+              <tr>
+                <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                  Loading closings...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Detail Modal -->
+  <div id="detailModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 500px;">
+      <h2 class="modal-title" style="margin-bottom: 4px;">Closing Details</h2>
+      <p class="modal-desc" id="detailModalSubtitle">Denomination breakdown</p>
+
+      <div class="receipt-box" id="detailModalContent">
+        <!-- Injected via JS -->
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" id="btnCloseDetail" class="btn-secondary">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/admin.js"></script>
+</body>
+</html>
