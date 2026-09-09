@@ -29,6 +29,7 @@ function doPost(e) {
         "Timestamp",
         "Employee",
         "Total Cash Counted",
+        "Cash Tips",
         "Drawer Float Kept",
         "Bank Deposit Amount",
         "Register Expected",
@@ -45,7 +46,7 @@ function doPost(e) {
         "Pennies ($0.01)",
         "Notes"
       ]);
-      sheet.getRange(1, 1, 1, 19).setFontWeight("bold").setBackground("#f3f4f6");
+      sheet.getRange(1, 1, 1, 20).setFontWeight("bold").setBackground("#f3f4f6");
     }
 
     // Format currency helper
@@ -57,6 +58,7 @@ function doPost(e) {
       new Date(data.timestamp || Date.now()).toLocaleString(),
       data.employee_name || "",
       num(data.total_cash),
+      num(data.cash_tips),
       num(data.drawer_float),
       num(data.deposit_amount),
       num(data.expected_amount),

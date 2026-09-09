@@ -21,6 +21,7 @@ const state = {
   items: {}, // key: id -> { count: 0, amount: 0, error: null }
   drawerFloat: 200.0,
   expectedAmount: 0.0,
+  cashTips: 0.0,
   isSaving: false,
 };
 
@@ -33,6 +34,7 @@ DENOMINATIONS.forEach(d => {
 const rowsContainer = document.getElementById('denomRowsContainer');
 const nonZeroBadge = document.getElementById('nonZeroCount');
 const totalCashDisplay = document.getElementById('totalCashDisplay');
+const cashTipsInput = document.getElementById('cashTipsInput');
 const drawerFloatInput = document.getElementById('drawerFloatInput');
 const depositAmountDisplay = document.getElementById('depositAmountDisplay');
 const expectedAmountInput = document.getElementById('expectedAmountInput');
@@ -269,6 +271,12 @@ function recalculateTotals() {
   totalCashDisplay.textContent = formatCurrency(totalCash);
   nonZeroBadge.textContent = `${nonZeroItems} item${nonZeroItems === 1 ? '' : 's'} counted`;
 
+  // Cash Tips (Optional)
+  if (cashTipsInput) {
+    const tipsVal = parseFloat(cashTipsInput.value);
+    state.cashTips = (!isNaN(tipsVal) && tipsVal >= 0) ? tipsVal : 0.0;
+  }
+
   // Drawer Float
   const drawerFloatVal = parseFloat(drawerFloatInput.value);
   state.drawerFloat = (!isNaN(drawerFloatVal) && drawerFloatVal >= 0) ? drawerFloatVal : 200.0;
@@ -362,6 +370,7 @@ function resetCalculator(showConfirm = true) {
 
   drawerFloatInput.value = '200';
   expectedAmountInput.value = '';
+  if (cashTipsInput) cashTipsInput.value = '';
   employeeNameInput.value = '';
   shiftNotesInput.value = '';
 
@@ -407,10 +416,15 @@ async function submitClosing() {
   const currentDrawerFloat = (!isNaN(drawerFloatVal) && drawerFloatVal >= 0) ? drawerFloatVal : 200.0;
   state.drawerFloat = currentDrawerFloat;
 
+  const tipsVal = parseFloat(cashTipsInput ? cashTipsInput.value : 0);
+  const currentTips = (!isNaN(tipsVal) && tipsVal >= 0) ? tipsVal : 0.0;
+  state.cashTips = currentTips;
+
   const payload = {
     employee_name: employeeName,
     drawer_float: currentDrawerFloat,
     expected_amount: currentExpected,
+    cash_tips: currentTips,
     breakdown: breakdownPayload,
     notes: shiftNotesInput.value.trim(),
   };
@@ -470,6 +484,11 @@ function showSuccessModal(closing) {
       <span>Total Cash Counted:</span>
       <strong>${formatCurrency(closing.total_cash)}</strong>
     </div>
+    ${Number(closing.cash_tips) > 0 ? `
+    <div class="receipt-line" style="color: #047857; font-weight: 600;">
+      <span>Cash Tips:</span>
+      <strong>${formatCurrency(closing.cash_tips)}</strong>
+    </div>` : ''}
     <div class="receipt-line">
       <span>Cash Kept in Drawer:</span>
       <strong>${formatCurrency(closing.drawer_float)}</strong>
@@ -498,6 +517,11 @@ function escapeHtml(str) {
 }
 
 // Event Listeners
+if (cashTipsInput) {
+  cashTipsInput.addEventListener('input', recalculateTotals);
+  cashTipsInput.addEventListener('change', recalculateTotals);
+  cashTipsInput.addEventListener('blur', recalculateTotals);
+}
 drawerFloatInput.addEventListener('input', recalculateTotals);
 drawerFloatInput.addEventListener('change', recalculateTotals);
 drawerFloatInput.addEventListener('blur', recalculateTotals);

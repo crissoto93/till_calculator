@@ -68,13 +68,14 @@ const sampleBreakdown = {
   coin_1:   { count: 50 }, // $0.50
 };
 // Total Cash = 300 + 100 + 200 + 50 + 40 + 25 + 10 + 3 + 1 + 0.50 = $729.50
-const totals = calculateClosingTotals(sampleBreakdown, 200, 200.15);
+const totals = calculateClosingTotals(sampleBreakdown, 200, 200.15, 35.50);
 assert.strictEqual(totals.totalCash, 729.50);
 assert.strictEqual(totals.drawerFloat, 200);
 assert.strictEqual(totals.deposit, 529.50);
 assert.strictEqual(totals.expected, 200.15);
+assert.strictEqual(totals.cashTips, 35.50);
 // Discrepancy = 200.00 - 200.15 = -0.15 (15 cents short)
 assert.strictEqual(totals.discrepancy, -0.15);
-console.log('✓ calculateClosingTotals validated (729.50 total, 529.50 deposit, -$0.15 short discrepancy)');
+console.log('✓ calculateClosingTotals validated (729.50 total, 529.50 deposit, 35.50 tips, -$0.15 short discrepancy)');
 
 console.log('ALL CALCULATOR UNIT TESTS PASSED! 🎉');

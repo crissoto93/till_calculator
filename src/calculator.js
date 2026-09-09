@@ -86,7 +86,7 @@ function countToAmount(denomination, countInput) {
  * Deposit Amount = Total Cash Counted - Drawer Float.
  * Thus: Discrepancy = Deposit Amount - Expected Sales.
  */
-function calculateClosingTotals(breakdown, drawerFloat = 200, expectedAmount = 0) {
+function calculateClosingTotals(breakdown, drawerFloat = 200, expectedAmount = 0, cashTips = 0) {
   let totalCashCents = 0;
   let hasErrors = false;
   const processedBreakdown = {};
@@ -110,6 +110,7 @@ function calculateClosingTotals(breakdown, drawerFloat = 200, expectedAmount = 0
 
   const drawerFloatCents = Math.round((Number(drawerFloat) || 0) * 100);
   const expectedCents = Math.round((Number(expectedAmount) || 0) * 100);
+  const cashTipsCents = Math.round((Number(cashTips) || 0) * 100);
 
   // Deposit is whatever cash is above the retained drawer float
   const depositCents = Math.max(0, totalCashCents - drawerFloatCents);
@@ -128,10 +129,12 @@ function calculateClosingTotals(breakdown, drawerFloat = 200, expectedAmount = 0
     totalCash: totalCashCents / 100,
     drawerFloatCents,
     drawerFloat: drawerFloatCents / 100,
-    depositCents,
-    deposit: depositCents / 100,
     expectedCents,
     expected: expectedCents / 100,
+    cashTipsCents,
+    cashTips: cashTipsCents / 100,
+    depositCents,
+    deposit: depositCents / 100,
     discrepancyCents,
     discrepancy: discrepancyCents / 100,
     hasErrors,

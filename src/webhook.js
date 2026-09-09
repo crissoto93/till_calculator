@@ -43,6 +43,7 @@ function formatWebhookPayload(closing) {
     timestamp: closing.created_at || new Date().toISOString(),
     employee_name: closing.employee_name,
     total_cash: closing.total_cash,
+    cash_tips: Number(closing.cash_tips) || 0,
     drawer_float: closing.drawer_float,
     deposit_amount: closing.deposit_amount,
     expected_amount: closing.expected_amount,

@@ -97,7 +97,7 @@ app.get('/api/config', (req, res) => {
  */
 app.post('/api/closings', (req, res) => {
   try {
-    const { employee_name, drawer_float, expected_amount, breakdown, notes } = req.body;
+    const { employee_name, drawer_float, expected_amount, cash_tips, breakdown, notes } = req.body;
 
     if (!employee_name || typeof employee_name !== 'string' || !employee_name.trim()) {
       return res.status(400).json({ error: 'Employee name is required.' });
@@ -111,6 +111,11 @@ app.post('/api/closings', (req, res) => {
     const expectedAmount = expected_amount !== undefined && expected_amount !== '' ? Number(expected_amount) : 0.0;
     if (isNaN(expectedAmount) || expectedAmount < 0) {
       return res.status(400).json({ error: 'Expected register amount must be a non-negative number.' });
+    }
+
+    const cashTips = cash_tips !== undefined && cash_tips !== '' ? Number(cash_tips) : 0.0;
+    if (isNaN(cashTips) || cashTips < 0) {
+      return res.status(400).json({ error: 'Cash tips must be a non-negative number.' });
     }
 
     // Validate breakdown and check denomination multiples
@@ -128,7 +133,7 @@ app.post('/api/closings', (req, res) => {
     }
 
     // Recalculate server-side to guarantee precision and integrity
-    const calculated = calculateClosingTotals(inputBreakdown, drawerFloat, expectedAmount);
+    const calculated = calculateClosingTotals(inputBreakdown, drawerFloat, expectedAmount, cashTips);
 
     const saved = insertClosing({
       employee_name: employee_name.trim(),
@@ -137,6 +142,7 @@ app.post('/api/closings', (req, res) => {
       total_cash: calculated.totalCash,
       deposit_amount: calculated.deposit,
       discrepancy: calculated.discrepancy,
+      cash_tips: calculated.cashTips,
       breakdown: calculated.breakdown,
       notes: notes || '',
     });
@@ -226,6 +232,7 @@ app.get('/api/admin/export.csv', requireAdmin, (req, res) => {
       'Date & Time (UTC)',
       'Employee Name',
       'Total Cash Counted',
+      'Cash Tips',
       'Drawer Float (Kept)',
       'Deposit Amount (Bank)',
       'Register Expected',
@@ -258,6 +265,7 @@ app.get('/api/admin/export.csv', requireAdmin, (req, res) => {
           c.created_at,
           c.employee_name,
           c.total_cash.toFixed(2),
+          (Number(c.cash_tips) || 0).toFixed(2),
           c.drawer_float.toFixed(2),
           c.deposit_amount.toFixed(2),
           c.expected_amount.toFixed(2),
@@ -326,6 +334,7 @@ app.post('/api/admin/test-webhook', requireAdmin, async (req, res) => {
     created_at: new Date().toISOString(),
     employee_name: 'Test Manager',
     total_cash: 550.0,
+    cash_tips: 25.0,
     drawer_float: 200.0,
     deposit_amount: 350.0,
     expected_amount: 350.0,

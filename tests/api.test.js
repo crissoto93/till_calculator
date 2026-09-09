@@ -96,6 +96,7 @@ async function runTests() {
         employee_name: 'Jordan',
         drawer_float: 200,
         expected_amount: 200.15,
+        cash_tips: 45.25,
         breakdown: {
           bill_100: { count: 3, amount: 300 },
           bill_50: { count: 2, amount: 100 },
@@ -122,8 +123,9 @@ async function runTests() {
     assert.strictEqual(validClosingRes.json.closing.deposit_amount, 457.0);
     assert.strictEqual(validClosingRes.json.closing.expected_amount, 200.15);
     assert.strictEqual(validClosingRes.json.closing.discrepancy, -0.15);
+    assert.strictEqual(validClosingRes.json.closing.cash_tips, 45.25);
     assert.strictEqual(validClosingRes.json.closing.notes, 'End of evening shift');
-    console.log('✓ Valid closing submission and calculation verified');
+    console.log('✓ Valid closing submission and calculation verified (including cash_tips)');
 
     // 5. Test Employee Privacy / Admin Access Protection
     const unauthorizedAdminRes = await request('/api/admin/closings');
@@ -164,7 +166,8 @@ async function runTests() {
     assert.strictEqual(statsRes.json.totalClosings, 1);
     assert.strictEqual(statsRes.json.totalCashCounted, 657.0);
     assert.strictEqual(statsRes.json.totalDeposits, 457.0);
-    console.log('✓ Admin stats verified');
+    assert.strictEqual(statsRes.json.totalCashTips, 45.25);
+    console.log('✓ Admin stats verified (including totalCashTips)');
 
     // 9. Test CSV Export
     const csvRes = await request('/api/admin/export.csv', {
@@ -174,8 +177,9 @@ async function runTests() {
     assert(csvRes.headers['content-type'].includes('text/csv'));
     assert(csvRes.text.includes('"Jordan"'));
     assert(csvRes.text.includes('"657.00"'));
+    assert(csvRes.text.includes('"45.25"'));
     assert(csvRes.text.includes('"457.00"'));
-    console.log('✓ CSV export generated and verified');
+    console.log('✓ CSV export generated and verified (including Cash Tips column)');
 
     console.log('\nALL API INTEGRATION TESTS PASSED! 🎉\n');
   } finally {

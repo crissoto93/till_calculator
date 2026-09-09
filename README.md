@@ -22,6 +22,7 @@ Designed for self-hosting on **Proxmox VE LXC containers** with a tiny memory fo
   - Displays inline warning badge and disables the Save button until corrected.
 - **💰 Smart Drawer Math**:
   - **Total Cash Counted**: Live sum of all bills and coins.
+  - **Cash Tips (Optional)**: Field to track cash tips collected for the day.
   - **Cash Stays in Drawer (Float)**: Editable, defaults to **$200.00**.
   - **Cash to Deposit**: Automatically calculated (`Total Cash Counted - Drawer Float`) with clear action callout for the employee.
   - **Register Expected**: Input for expected ending drawer cash after deposit.
@@ -30,8 +31,8 @@ Designed for self-hosting on **Proxmox VE LXC containers** with a tiny memory fo
   - Employees only see the entry calculator and a submission confirmation receipt.
   - Employees **cannot** view, browse, or edit prior closings.
 - **📊 Manager Admin Dashboard (`/admin`)**:
-  - Protected by Manager PIN (default: `1234`).
-  - Total closings count, total bank deposits, and total cash stats.
+  - Protected by Manager PIN / Password (default: `1234`).
+  - Total closings count, total bank deposits, total cash, and total cash tips stats.
   - Complete history log with searchable employee filter and expandable denomination breakdowns.
   - **📥 One-Click CSV Export**: Downloads complete RFC-4180 CSV spreadsheet.
   - **🔗 Google Sheets Webhook**: Real-time push to Google Sheets or Notion via Google Apps Script.

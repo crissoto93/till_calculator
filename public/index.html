@@ -83,6 +83,26 @@
           <div class="summary-value primary" id="totalCashDisplay">$0.00</div>
         </div>
 
+        <!-- Cash Tips for the Day (Optional) -->
+        <div class="summary-row">
+          <div class="summary-label">
+            <span>Cash Tips</span>
+            <span class="summary-sublabel">Total cash tips for the day (optional)</span>
+          </div>
+          <div class="summary-input-wrap">
+            <span class="prefix">$</span>
+            <input 
+              type="number" 
+              id="cashTipsInput" 
+              class="summary-input" 
+              placeholder="0.00" 
+              min="0" 
+              step="0.01"
+              inputmode="decimal"
+            >
+          </div>
+        </div>
+
         <!-- 2. Drawer Float (Cash to stay) -->
         <div class="summary-row">
           <div class="summary-label">

@@ -16,6 +16,7 @@ const btnLogout = document.getElementById('btnLogout');
 const statClosings = document.getElementById('statClosings');
 const statDeposits = document.getElementById('statDeposits');
 const statTotalCash = document.getElementById('statTotalCash');
+const statTotalTips = document.getElementById('statTotalTips');
 
 const closingsTableBody = document.getElementById('closingsTableBody');
 const historyCount = document.getElementById('historyCount');
@@ -123,6 +124,9 @@ async function loadDashboardData() {
   statClosings.textContent = stats.totalClosings;
   statDeposits.textContent = formatCurrency(stats.totalDeposits);
   statTotalCash.textContent = formatCurrency(stats.totalCashCounted);
+  if (statTotalTips) {
+    statTotalTips.textContent = formatCurrency(stats.totalCashTips || 0);
+  }
 
   // 2. Fetch Closings
   const closingsRes = await fetch('/api/admin/closings?limit=500', { headers });
@@ -148,7 +152,7 @@ function renderTable(rows) {
   if (rows.length === 0) {
     closingsTableBody.innerHTML = `
       <tr>
-        <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 32px;">
+        <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 32px;">
           No till closings found.
         </td>
       </tr>
@@ -175,6 +179,7 @@ function renderTable(rows) {
           <td><strong>${dateStr}</strong></td>
           <td>${escapeHtml(c.employee_name)}</td>
           <td>${formatCurrency(c.total_cash)}</td>
+          <td style="color: #047857; font-weight: 600;">${Number(c.cash_tips) > 0 ? formatCurrency(c.cash_tips) : '—'}</td>
           <td>${formatCurrency(c.drawer_float)}</td>
           <td style="color: var(--primary); font-weight: 800;">${formatCurrency(c.deposit_amount)}</td>
           <td>${formatCurrency(c.expected_amount)}</td>
@@ -245,6 +250,11 @@ window.viewDetail = function (id) {
       <span>Total Cash Counted:</span>
       <strong>${formatCurrency(closing.total_cash)}</strong>
     </div>
+    ${Number(closing.cash_tips) > 0 ? `
+    <div class="receipt-line" style="color: #047857; font-weight: 600;">
+      <span>Cash Tips:</span>
+      <strong>${formatCurrency(closing.cash_tips)}</strong>
+    </div>` : ''}
     <div class="receipt-line">
       <span>Drawer Float Kept:</span>
       <strong>${formatCurrency(closing.drawer_float)}</strong>

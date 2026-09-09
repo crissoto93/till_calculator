@@ -28,6 +28,7 @@ db.exec(`
     total_cash REAL NOT NULL,
     deposit_amount REAL NOT NULL,
     discrepancy REAL NOT NULL,
+    cash_tips REAL DEFAULT 0.00,
     count_100 INTEGER DEFAULT 0,
     count_50 INTEGER DEFAULT 0,
     count_20 INTEGER DEFAULT 0,
@@ -49,6 +50,18 @@ db.exec(`
   );
 `);
 
+// Migration: Ensure cash_tips column exists in existing SQLite databases
+try {
+  const tableInfo = db.prepare('PRAGMA table_info(closings)').all();
+  const hasCashTips = tableInfo.some(col => col.name === 'cash_tips');
+  if (!hasCashTips) {
+    db.exec('ALTER TABLE closings ADD COLUMN cash_tips REAL DEFAULT 0.00;');
+    console.log('[DB Migration] Added cash_tips column to closings table.');
+  }
+} catch (err) {
+  console.error('[DB Migration error]', err);
+}
+
 /**
  * Insert a new till closing record (Append-only).
  */
@@ -56,13 +69,13 @@ function insertClosing(data) {
   const stmt = db.prepare(`
     INSERT INTO closings (
       created_at, employee_name, drawer_float, expected_amount,
-      total_cash, deposit_amount, discrepancy,
+      total_cash, deposit_amount, discrepancy, cash_tips,
       count_100, count_50, count_20, count_10, count_5, count_1,
       count_025, count_010, count_005, count_001,
       breakdown_json, notes
     ) VALUES (
       ?, ?, ?, ?,
-      ?, ?, ?,
+      ?, ?, ?, ?,
       ?, ?, ?, ?, ?, ?,
       ?, ?, ?, ?,
       ?, ?
@@ -80,6 +93,7 @@ function insertClosing(data) {
     Number(data.total_cash) || 0.0,
     Number(data.deposit_amount) || 0.0,
     Number(data.discrepancy) || 0.0,
+    Number(data.cash_tips) || 0.0,
     Number(breakdown.bill_100?.count) || 0,
     Number(breakdown.bill_50?.count) || 0,
     Number(breakdown.bill_20?.count) || 0,
@@ -103,6 +117,7 @@ function insertClosing(data) {
     expected_amount: Number(data.expected_amount) || 0.0,
     deposit_amount: Number(data.deposit_amount) || 0.0,
     discrepancy: Number(data.discrepancy) || 0.0,
+    cash_tips: Number(data.cash_tips) || 0.0,
     notes: data.notes ? data.notes.trim() : '',
   };
 }
@@ -123,12 +138,13 @@ function getAllClosings(limit = 500, offset = 0) {
  * Get closing summary statistics for Admin dashboard.
  */
 function getClosingStats() {
-  const countStmt = db.prepare('SELECT COUNT(*) as total_closings, SUM(deposit_amount) as total_deposits, SUM(total_cash) as total_cash_counted FROM closings');
+  const countStmt = db.prepare('SELECT COUNT(*) as total_closings, SUM(deposit_amount) as total_deposits, SUM(total_cash) as total_cash_counted, SUM(cash_tips) as total_cash_tips FROM closings');
   const stats = countStmt.get();
   return {
     totalClosings: stats.total_closings || 0,
     totalDeposits: stats.total_deposits || 0,
     totalCashCounted: stats.total_cash_counted || 0,
+    totalCashTips: stats.total_cash_tips || 0,
   };
 }
 

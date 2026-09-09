@@ -55,6 +55,7 @@ The **Till Closing Calculator** is a lightweight, mobile-first web application d
    - The app auto-syncs both columns in real time.
 4. **Review Totals**:
    - **Total Cash Counted**: Live sum of all bills and coins.
+   - **Cash Tips**: Optional input for total cash tips collected during the shift/day.
    - **Cash Stays in Drawer**: Defaults to `$200.00` (can be changed if a different float is kept).
    - **Cash to Deposit**: The app calculates `Total Cash Counted - Cash Stays in Drawer` and highlights it in green: *"This is what should be cashed out from the register and prepared for the bank deposit."*
    - **Register Expected**: The employee enters the expected ending drawer cash from the POS/register report.
@@ -62,13 +63,14 @@ The **Till Closing Calculator** is a lightweight, mobile-first web application d
 5. **Submit Closing**:
    - Tap **"Save & Submit Till Closing"**.
    - The system records the entry into SQLite and dispatches the webhook (if configured).
-   - A clean **Receipt Modal** appears confirming the timestamp, deposit amount, float, and discrepancy.
+   - A clean **Receipt Modal** appears confirming the timestamp, deposit amount, float, cash tips, and discrepancy.
    - Tapping **"Start New Till Closing"** resets the form for the next shift. Staff cannot see any historical entries.
 
 ### Manager Admin Dashboard (`/admin`)
 Accessing `/admin` opens the management portal:
-- **PIN Authentication**: Protected by a manager PIN (default: `1234`, customizable).
-- **Shift Audit Log**: A comprehensive table showing date/time, employee, total cash, drawer float, bank deposit, expected cash, and discrepancy.
+- **PIN / Password Authentication**: Protected by manager credentials (customizable via UI or `ADMIN_PIN`).
+- **Shift Audit Log**: A comprehensive table showing date/time, employee, total cash, cash tips, drawer float, bank deposit, expected cash, and discrepancy.
+- **Top Metrics**: Displays Total Closings, Total Deposits, Total Cash Counted, and Total Cash Tips.
 - **Denomination Breakdown**: Clicking **"Details"** on any row opens the exact bill-by-bill and coin-by-coin count submitted during that shift.
 - **Search & Filter**: Quickly filter entries by employee name.
 - **One-Click CSV Export**: Downloads a complete spreadsheet (`till_closings_YYYY-MM-DD.csv`) compatible with Microsoft Excel, Apple Numbers, and Google Sheets.
