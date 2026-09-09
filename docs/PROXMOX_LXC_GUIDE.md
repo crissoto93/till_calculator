@@ -55,6 +55,22 @@ systemctl restart till-calculator
 journalctl -u till-calculator -f
 ```
 
+### 5. How to Update to the Latest Version
+If you cloned the repo in `/root/g_till_calculator` (or another folder), remember that `systemd` runs the app out of `/opt/g_till_calculator`. To update:
+
+```bash
+cd /root/g_till_calculator
+git pull origin main
+./update-lxc.sh
+```
+
+Or manually sync and restart:
+```bash
+cp -rf /root/g_till_calculator/* /opt/g_till_calculator/
+chown -R tillapp:tillapp /opt/g_till_calculator
+systemctl restart till-calculator
+```
+
 ---
 
 ## Deployment Option B: Docker inside LXC Container

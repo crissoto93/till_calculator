@@ -232,6 +232,19 @@ It will return the JSON denomination list.
 
 ---
 
+### Step 5: Updating the Application
+When new updates or features are pushed to git:
+
+```bash
+cd /root/g_till_calculator    # wherever you cloned the repo
+git pull origin main
+./update-lxc.sh
+```
+
+*(This automatically syncs the updated files to `/opt/g_till_calculator`, sets user permissions, and restarts the systemd service).*
+
+---
+
 ## 6. Domain, DDNS & Cloudflare Networking
 
 You mentioned setting up a DDNS service like `ddns-updater` with a domain managed by Cloudflare. 
