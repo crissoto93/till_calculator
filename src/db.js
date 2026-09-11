@@ -39,6 +39,10 @@ db.exec(`
     count_010 INTEGER DEFAULT 0,
     count_005 INTEGER DEFAULT 0,
     count_001 INTEGER DEFAULT 0,
+    roll_25 INTEGER DEFAULT 0,
+    roll_10 INTEGER DEFAULT 0,
+    roll_5 INTEGER DEFAULT 0,
+    roll_1 INTEGER DEFAULT 0,
     breakdown_json TEXT NOT NULL,
     notes TEXT DEFAULT ''
   );
@@ -50,13 +54,30 @@ db.exec(`
   );
 `);
 
-// Migration: Ensure cash_tips column exists in existing SQLite databases
+// Migration: Ensure cash_tips and coin roll columns exist in existing SQLite databases
 try {
   const tableInfo = db.prepare('PRAGMA table_info(closings)').all();
-  const hasCashTips = tableInfo.some(col => col.name === 'cash_tips');
-  if (!hasCashTips) {
+  const existingCols = new Set(tableInfo.map(col => col.name));
+
+  if (!existingCols.has('cash_tips')) {
     db.exec('ALTER TABLE closings ADD COLUMN cash_tips REAL DEFAULT 0.00;');
     console.log('[DB Migration] Added cash_tips column to closings table.');
+  }
+  if (!existingCols.has('roll_25')) {
+    db.exec('ALTER TABLE closings ADD COLUMN roll_25 INTEGER DEFAULT 0;');
+    console.log('[DB Migration] Added roll_25 column to closings table.');
+  }
+  if (!existingCols.has('roll_10')) {
+    db.exec('ALTER TABLE closings ADD COLUMN roll_10 INTEGER DEFAULT 0;');
+    console.log('[DB Migration] Added roll_10 column to closings table.');
+  }
+  if (!existingCols.has('roll_5')) {
+    db.exec('ALTER TABLE closings ADD COLUMN roll_5 INTEGER DEFAULT 0;');
+    console.log('[DB Migration] Added roll_5 column to closings table.');
+  }
+  if (!existingCols.has('roll_1')) {
+    db.exec('ALTER TABLE closings ADD COLUMN roll_1 INTEGER DEFAULT 0;');
+    console.log('[DB Migration] Added roll_1 column to closings table.');
   }
 } catch (err) {
   console.error('[DB Migration error]', err);
@@ -72,11 +93,13 @@ function insertClosing(data) {
       total_cash, deposit_amount, discrepancy, cash_tips,
       count_100, count_50, count_20, count_10, count_5, count_1,
       count_025, count_010, count_005, count_001,
+      roll_25, roll_10, roll_5, roll_1,
       breakdown_json, notes
     ) VALUES (
       ?, ?, ?, ?,
       ?, ?, ?, ?,
       ?, ?, ?, ?, ?, ?,
+      ?, ?, ?, ?,
       ?, ?, ?, ?,
       ?, ?
     )
@@ -104,6 +127,10 @@ function insertClosing(data) {
     Number(breakdown.coin_10?.count) || 0,
     Number(breakdown.coin_5?.count) || 0,
     Number(breakdown.coin_1?.count) || 0,
+    Number(breakdown.roll_25?.count) || 0,
+    Number(breakdown.roll_10?.count) || 0,
+    Number(breakdown.roll_5?.count) || 0,
+    Number(breakdown.roll_1?.count) || 0,
     JSON.stringify(breakdown),
     data.notes ? data.notes.trim() : ''
   );

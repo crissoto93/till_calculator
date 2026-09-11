@@ -3,6 +3,8 @@ const crypto = require('node:crypto');
 const express = require('express');
 const {
   DENOMINATIONS,
+  COIN_ROLLS,
+  ALL_ITEMS,
   calculateClosingTotals,
   amountToCount,
 } = require('./src/calculator');
@@ -86,6 +88,7 @@ function requireAdmin(req, res, next) {
 app.get('/api/config', (req, res) => {
   res.json({
     denominations: DENOMINATIONS,
+    coinRolls: COIN_ROLLS,
     defaultDrawerFloat: 200.0,
   });
 });
@@ -118,15 +121,15 @@ app.post('/api/closings', (req, res) => {
       return res.status(400).json({ error: 'Cash tips must be a non-negative number.' });
     }
 
-    // Validate breakdown and check denomination multiples
+    // Validate breakdown and check denomination multiples (bills, loose coins, coin rolls)
     const inputBreakdown = breakdown || {};
-    for (const denom of DENOMINATIONS) {
-      const item = inputBreakdown[denom.id];
+    for (const itemDef of ALL_ITEMS) {
+      const item = inputBreakdown[itemDef.id];
       if (item && item.amount !== undefined && item.amount !== '' && Number(item.amount) > 0) {
-        const check = amountToCount(denom, item.amount);
+        const check = amountToCount(itemDef, item.amount);
         if (!check.valid) {
           return res.status(400).json({
-            error: `Invalid amount for ${denom.label}: $${item.amount}. Must be an exact multiple of ${denom.label}.`,
+            error: `Invalid amount for ${itemDef.label}: $${item.amount}. Must be an exact multiple of ${itemDef.label}.`,
           });
         }
       }
@@ -247,6 +250,10 @@ app.get('/api/admin/export.csv', requireAdmin, (req, res) => {
       'Dimes ($0.10)',
       'Nickels ($0.05)',
       'Pennies ($0.01)',
+      'Quarter Rolls ($10)',
+      'Dime Rolls ($5)',
+      'Nickel Rolls ($2)',
+      'Penny Rolls ($0.50)',
       'Notes',
     ];
 
@@ -280,6 +287,10 @@ app.get('/api/admin/export.csv', requireAdmin, (req, res) => {
           c.count_010,
           c.count_005,
           c.count_001,
+          c.roll_25 || 0,
+          c.roll_10 || 0,
+          c.roll_5 || 0,
+          c.roll_1 || 0,
           c.notes || '',
         ]
           .map(escapeCsv)

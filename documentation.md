@@ -51,10 +51,15 @@ The **Till Closing Calculator** is a lightweight, mobile-first web application d
 1. **Open the App**: The employee loads `http://<your-domain>/` on their smartphone browser.
 2. **Enter Name**: Types their name or initials (e.g., `Sarah K.`).
 3. **Count the Till**:
-   - For each denomination ($100 down to $0.01), staff can either type the **Quantity** or the **Dollar Total**.
-   - The app auto-syncs both columns in real time.
+   - **Cash Denominations**: For each bill ($100 to $1) and loose coin ($0.25 to $0.01), staff can enter either the **Quantity** or the **Dollar Total**.
+   - **Coin Rolls (Full Wrappers)**: Dedicated card for intact wrapped coin rolls:
+     - **Quarters Roll**: `$10.00` (40 coins)
+     - **Dimes Roll**: `$5.00` (50 coins)
+     - **Nickels Roll**: `$2.00` (40 coins)
+     - **Pennies Roll**: `$0.50` (50 coins)
+   - The app auto-syncs both columns in real time with strict multiple validation.
 4. **Review Totals**:
-   - **Total Cash Counted**: Live sum of all bills and coins.
+   - **Total Cash Counted**: Live sum of all bills, loose coins, and wrapped coin rolls.
    - **Cash Tips**: Optional input for total cash tips collected during the shift/day.
    - **Cash Stays in Drawer**: Defaults to `$200.00` (can be changed if a different float is kept).
    - **Cash to Deposit**: The app calculates `Total Cash Counted - Cash Stays in Drawer` and highlights it in green: *"This is what should be cashed out from the register and prepared for the bank deposit."*
@@ -84,8 +89,12 @@ Accessing `/admin` opens the management portal:
 Standard JavaScript floating-point numbers often produce rounding glitches (e.g. `0.1 + 0.2 = 0.30000000000000004`). In this app, **all calculations are converted to integer cents internally**:
 - `$100.00` &rarr; `10,000` cents
 - `$20.00` &rarr; `2,000` cents
-- `$0.25` &rarr; `25` cents
-- `$0.01` &rarr; `1` cent
+- `$10.00 Roll` (Quarters) &rarr; `1,000` cents
+- `$5.00 Roll` (Dimes) &rarr; `500` cents
+- `$2.00 Roll` (Nickels) &rarr; `200` cents
+- `$0.50 Roll` (Pennies) &rarr; `50` cents
+- `$0.25` (Quarter) &rarr; `25` cents
+- `$0.01` (Penny) &rarr; `1` cent
 
 This guarantees 100% mathematical accuracy without rounding drift.
 

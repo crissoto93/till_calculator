@@ -216,6 +216,11 @@ window.viewDetail = function (id) {
     breakdown = {};
   }
 
+  const roll25 = closing.roll_25 !== undefined ? closing.roll_25 : (breakdown.roll_25?.count || 0);
+  const roll10 = closing.roll_10 !== undefined ? closing.roll_10 : (breakdown.roll_10?.count || 0);
+  const roll5  = closing.roll_5  !== undefined ? closing.roll_5  : (breakdown.roll_5?.count || 0);
+  const roll1  = closing.roll_1  !== undefined ? closing.roll_1  : (breakdown.roll_1?.count || 0);
+
   const denomRows = [
     { label: '$100 Bills', count: closing.count_100, val: closing.count_100 * 100 },
     { label: '$50 Bills',  count: closing.count_50,  val: closing.count_50 * 50 },
@@ -229,6 +234,13 @@ window.viewDetail = function (id) {
     { label: 'Pennies ($0.01)',  count: closing.count_001, val: closing.count_001 * 0.01 },
   ];
 
+  const rollRows = [
+    { label: 'Quarter Rolls ($10)', count: roll25, val: roll25 * 10 },
+    { label: 'Dime Rolls ($5)',     count: roll10, val: roll10 * 5 },
+    { label: 'Nickel Rolls ($2)',   count: roll5,  val: roll5 * 2 },
+    { label: 'Penny Rolls ($0.50)', count: roll1,  val: roll1 * 0.50 },
+  ];
+
   let breakdownHtml = denomRows
     .map(
       d => `
@@ -240,11 +252,28 @@ window.viewDetail = function (id) {
     )
     .join('');
 
+  const hasRolls = rollRows.some(r => r.count > 0);
+  let rollsHtml = '';
+  if (hasRolls) {
+    rollsHtml = `
+      <div style="margin-top: 10px; margin-bottom: 6px; font-weight: 700; color: #6d28d9; font-size: 0.82rem; text-transform: uppercase;">
+        🪙 Coin Rolls (Full Wrappers)
+      </div>
+      ${rollRows.map(r => `
+        <div class="receipt-line" style="font-size: 0.82rem;">
+          <span>${r.label} (×${r.count}):</span>
+          <strong>${formatCurrency(r.val)}</strong>
+        </div>
+      `).join('')}
+    `;
+  }
+
   detailModalContent.innerHTML = `
     <div style="margin-bottom: 12px; font-weight: 700; color: #475569; font-size: 0.85rem; text-transform: uppercase;">
-      Denomination Breakdown
+      Cash Denominations
     </div>
     ${breakdownHtml}
+    ${rollsHtml}
     
     <div class="receipt-line bold" style="margin-top: 10px;">
       <span>Total Cash Counted:</span>

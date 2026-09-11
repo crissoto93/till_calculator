@@ -16,6 +16,16 @@ const DENOMINATIONS = [
   { id: 'coin_1',   label: '$0.01', name: 'Penny',   value: 0.01,  cents: 1,     type: 'coin' },
 ];
 
+// Standard US Coin Rolls (Full wrappers)
+const COIN_ROLLS = [
+  { id: 'roll_25', label: '$10 Roll',   name: 'Quarters ($10)', sub: 'Quarters', value: 10.0, cents: 1000, type: 'roll' },
+  { id: 'roll_10', label: '$5 Roll',    name: 'Dimes ($5)',     sub: 'Dimes',    value: 5.0,  cents: 500,  type: 'roll' },
+  { id: 'roll_5',  label: '$2 Roll',    name: 'Nickels ($2)',   sub: 'Nickels',  value: 2.0,  cents: 200,  type: 'roll' },
+  { id: 'roll_1',  label: '$0.50 Roll', name: 'Pennies ($0.50)', sub: 'Pennies', value: 0.50, cents: 50,   type: 'roll' },
+];
+
+const ALL_ITEMS = [...DENOMINATIONS, ...COIN_ROLLS];
+
 // App State
 const state = {
   items: {}, // key: id -> { count: 0, amount: 0, error: null }
@@ -26,13 +36,15 @@ const state = {
 };
 
 // Initialize state
-DENOMINATIONS.forEach(d => {
+ALL_ITEMS.forEach(d => {
   state.items[d.id] = { count: 0, amount: 0.0, error: null };
 });
 
 // DOM Elements
 const rowsContainer = document.getElementById('denomRowsContainer');
+const coinRollsRowsContainer = document.getElementById('coinRollsRowsContainer');
 const nonZeroBadge = document.getElementById('nonZeroCount');
+const rollsCountBadge = document.getElementById('rollsCountBadge');
 const totalCashDisplay = document.getElementById('totalCashDisplay');
 const cashTipsInput = document.getElementById('cashTipsInput');
 const drawerFloatInput = document.getElementById('drawerFloatInput');
@@ -50,12 +62,13 @@ const modalReceiptDetails = document.getElementById('modalReceiptDetails');
 const btnModalDone = document.getElementById('btnModalDone');
 
 /**
- * Render the 3-column table rows
+ * Render 3-column table rows into a container
  */
-function renderDenominationRows() {
-  rowsContainer.innerHTML = '';
+function renderTableRows(items, containerEl) {
+  if (!containerEl) return;
+  containerEl.innerHTML = '';
 
-  DENOMINATIONS.forEach(denom => {
+  items.forEach(denom => {
     const rowEl = document.createElement('div');
     rowEl.className = 'denom-row';
     rowEl.id = `row_${denom.id}`;
@@ -63,11 +76,20 @@ function renderDenominationRows() {
     // Column 1: Denomination
     const col1 = document.createElement('div');
     col1.className = 'col-denom';
-    col1.innerHTML = `
-      <div class="denom-chip ${denom.type}">
-        ${denom.label}
-      </div>
-    `;
+    if (denom.type === 'roll') {
+      col1.innerHTML = `
+        <div class="denom-chip roll">
+          <span class="roll-title">${denom.label}</span>
+          <span class="roll-sub">${denom.sub}</span>
+        </div>
+      `;
+    } else {
+      col1.innerHTML = `
+        <div class="denom-chip ${denom.type}">
+          ${denom.label}
+        </div>
+      `;
+    }
 
     // Column 2: Quantity (editable, numbers only)
     const col2 = document.createElement('div');
@@ -114,7 +136,7 @@ function renderDenominationRows() {
     rowEl.appendChild(col2);
     rowEl.appendChild(col3);
     rowEl.appendChild(errorBanner);
-    rowsContainer.appendChild(rowEl);
+    containerEl.appendChild(rowEl);
 
     // Event Listeners for Bi-directional sync
     const countInput = col2.querySelector('input');
@@ -253,7 +275,8 @@ function handleAmountChange(denom, rawVal) {
  */
 function recalculateTotals() {
   let totalCashCents = 0;
-  let nonZeroItems = 0;
+  let nonZeroCash = 0;
+  let nonZeroRolls = 0;
   let hasErrors = false;
 
   DENOMINATIONS.forEach(denom => {
@@ -262,14 +285,28 @@ function recalculateTotals() {
       hasErrors = true;
     }
     if (item.count > 0) {
-      nonZeroItems++;
+      nonZeroCash++;
       totalCashCents += item.count * denom.cents;
+    }
+  });
+
+  COIN_ROLLS.forEach(roll => {
+    const item = state.items[roll.id];
+    if (item.error) {
+      hasErrors = true;
+    }
+    if (item.count > 0) {
+      nonZeroRolls++;
+      totalCashCents += item.count * roll.cents;
     }
   });
 
   const totalCash = totalCashCents / 100;
   totalCashDisplay.textContent = formatCurrency(totalCash);
-  nonZeroBadge.textContent = `${nonZeroItems} item${nonZeroItems === 1 ? '' : 's'} counted`;
+  nonZeroBadge.textContent = `${nonZeroCash} item${nonZeroCash === 1 ? '' : 's'} counted`;
+  if (rollsCountBadge) {
+    rollsCountBadge.textContent = `${nonZeroRolls} roll${nonZeroRolls === 1 ? '' : 's'} counted`;
+  }
 
   // Cash Tips (Optional)
   if (cashTipsInput) {
@@ -355,7 +392,7 @@ function resetCalculator(showConfirm = true) {
     }
   }
 
-  DENOMINATIONS.forEach(denom => {
+  ALL_ITEMS.forEach(denom => {
     state.items[denom.id] = { count: 0, amount: 0.0, error: null };
     const cInput = document.getElementById(`count_${denom.id}`);
     const aInput = document.getElementById(`amount_${denom.id}`);
@@ -399,7 +436,7 @@ async function submitClosing() {
   let totalCashCents = 0;
   const breakdownPayload = {};
 
-  DENOMINATIONS.forEach(denom => {
+  ALL_ITEMS.forEach(denom => {
     const item = state.items[denom.id];
     totalCashCents += item.count * denom.cents;
     breakdownPayload[denom.id] = {
@@ -471,6 +508,21 @@ function showSuccessModal(closing) {
     discColor = '#b91c1c';
   }
 
+  let rollSummaryHtml = '';
+  if (closing.breakdown) {
+    const rollItems = COIN_ROLLS.filter(r => closing.breakdown[r.id] && closing.breakdown[r.id].count > 0);
+    const totalRollsCount = rollItems.reduce((sum, r) => sum + (closing.breakdown[r.id].count || 0), 0);
+    const totalRollsValue = rollItems.reduce((sum, r) => sum + ((closing.breakdown[r.id].count || 0) * r.value), 0);
+    if (totalRollsCount > 0) {
+      rollSummaryHtml = `
+        <div class="receipt-line" style="color: #6d28d9; font-weight: 600;">
+          <span>Coin Rolls (${totalRollsCount} rolls):</span>
+          <strong>${formatCurrency(totalRollsValue)}</strong>
+        </div>
+      `;
+    }
+  }
+
   modalReceiptDetails.innerHTML = `
     <div class="receipt-line">
       <span>Date & Time:</span>
@@ -484,6 +536,7 @@ function showSuccessModal(closing) {
       <span>Total Cash Counted:</span>
       <strong>${formatCurrency(closing.total_cash)}</strong>
     </div>
+    ${rollSummaryHtml}
     ${Number(closing.cash_tips) > 0 ? `
     <div class="receipt-line" style="color: #047857; font-weight: 600;">
       <span>Cash Tips:</span>
@@ -538,5 +591,8 @@ btnModalDone.addEventListener('click', () => {
 });
 
 // Initialize on page load
-renderDenominationRows();
+renderTableRows(DENOMINATIONS, rowsContainer);
+if (coinRollsRowsContainer) {
+  renderTableRows(COIN_ROLLS, coinRollsRowsContainer);
+}
 recalculateTotals();

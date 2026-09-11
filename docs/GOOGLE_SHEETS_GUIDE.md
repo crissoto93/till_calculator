@@ -44,9 +44,13 @@ function doPost(e) {
         "Dimes ($0.10)",
         "Nickels ($0.05)",
         "Pennies ($0.01)",
+        "Quarter Rolls ($10)",
+        "Dime Rolls ($5)",
+        "Nickel Rolls ($2)",
+        "Penny Rolls ($0.50)",
         "Notes"
       ]);
-      sheet.getRange(1, 1, 1, 20).setFontWeight("bold").setBackground("#f3f4f6");
+      sheet.getRange(1, 1, 1, 24).setFontWeight("bold").setBackground("#f3f4f6");
     }
 
     // Format currency helper
@@ -73,6 +77,10 @@ function doPost(e) {
       num(data.count_010),
       num(data.count_005),
       num(data.count_001),
+      num(data.roll_25),
+      num(data.roll_10),
+      num(data.roll_5),
+      num(data.roll_1),
       data.notes || ""
     ]);
 

@@ -57,9 +57,13 @@ function formatWebhookPayload(closing) {
     count_5:   Number(breakdown.bill_5?.count)   || Number(closing.count_5)   || 0,
     count_1:   Number(breakdown.bill_1?.count)   || Number(closing.count_1)   || 0,
     count_025: Number(breakdown.coin_25?.count)  || Number(closing.count_025) || 0,
-    count_010: Number(breakdown.coin_10?.count)  || Number(closing.coin_010)  || 0,
-    count_005: Number(breakdown.coin_5?.count)   || Number(closing.coin_005)  || 0,
-    count_001: Number(breakdown.coin_1?.count)   || Number(closing.coin_001)  || 0,
+    count_010: Number(breakdown.coin_10?.count)  || Number(closing.count_010) || 0,
+    count_005: Number(breakdown.coin_5?.count)   || Number(closing.count_005) || 0,
+    count_001: Number(breakdown.coin_1?.count)   || Number(closing.count_001) || 0,
+    roll_25:   Number(breakdown.roll_25?.count)  || Number(closing.roll_25)   || 0,
+    roll_10:   Number(breakdown.roll_10?.count)  || Number(closing.roll_10)   || 0,
+    roll_5:    Number(breakdown.roll_5?.count)   || Number(closing.roll_5)    || 0,
+    roll_1:    Number(breakdown.roll_1?.count)   || Number(closing.roll_1)    || 0,
     breakdown,
   };
 }

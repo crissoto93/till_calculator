@@ -16,6 +16,15 @@ const DENOMINATIONS = [
   { id: 'coin_1',   label: '$0.01', name: 'Penny',   value: 0.01,  cents: 1,     type: 'coin' },
 ];
 
+const COIN_ROLLS = [
+  { id: 'roll_25', label: '$10 Roll',   name: 'Quarters ($10)', coinLabel: '$0.25', value: 10.0, cents: 1000, coinsPerRoll: 40, type: 'roll' },
+  { id: 'roll_10', label: '$5 Roll',    name: 'Dimes ($5)',     coinLabel: '$0.10', value: 5.0,  cents: 500,  coinsPerRoll: 50, type: 'roll' },
+  { id: 'roll_5',  label: '$2 Roll',    name: 'Nickels ($2)',   coinLabel: '$0.05', value: 2.0,  cents: 200,  coinsPerRoll: 40, type: 'roll' },
+  { id: 'roll_1',  label: '$0.50 Roll', name: 'Pennies ($0.50)', coinLabel: '$0.01', value: 0.50, cents: 50,   coinsPerRoll: 50, type: 'roll' },
+];
+
+const ALL_ITEMS = [...DENOMINATIONS, ...COIN_ROLLS];
+
 /**
  * Validate and calculate count from an amount string or number.
  * Returns { valid: boolean, count: number, cents: number, amount: number, error?: string }
@@ -91,7 +100,7 @@ function calculateClosingTotals(breakdown, drawerFloat = 200, expectedAmount = 0
   let hasErrors = false;
   const processedBreakdown = {};
 
-  for (const denom of DENOMINATIONS) {
+  for (const denom of ALL_ITEMS) {
     const item = breakdown[denom.id] || { count: 0, amount: 0 };
     const count = Math.max(0, parseInt(item.count, 10) || 0);
     const itemCents = count * denom.cents;
@@ -143,6 +152,8 @@ function calculateClosingTotals(breakdown, drawerFloat = 200, expectedAmount = 0
 
 module.exports = {
   DENOMINATIONS,
+  COIN_ROLLS,
+  ALL_ITEMS,
   amountToCount,
   countToAmount,
   calculateClosingTotals,
